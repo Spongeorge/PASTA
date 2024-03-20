@@ -196,7 +196,8 @@ def map_to(
 def load_model(
     name: str, 
     device: Optional[Device] = None, 
-    fp16: Optional[bool] = None, 
+    fp16: Optional[bool] = None,
+    quantization: Optional[str] = None,
 ) -> ModelAndTokenizer:
     """Load the model given its string name.
 
@@ -213,6 +214,21 @@ def load_model(
         name = GPT_J_NAME
     elif name == GPT_NEO_X_NAME_SHORT:
         name = GPT_NEO_X_NAME
+
+    if quantization == '4bit':
+        quantization_config = transformers.BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_quant_type="nf4"
+        )
+    elif quantization == '8bit':
+        quantization_config = transformers.BitsAndBytesConfig(
+            load_in_8bit=True,
+            bnb_8bit_compute_dtype=torch.float16,
+            bnb_8bit_quant_type="nf8"
+        )
+    else:
+        quantization_config = None
 
     is_gpt_j_variant = name == GPT_J_NAME or GPT_J_NAME_SHORT in name
     is_neo_x_variant = name == GPT_NEO_X_NAME or GPT_NEO_X_NAME_SHORT in name
@@ -234,7 +250,7 @@ def load_model(
 
     config = transformers.AutoConfig.from_pretrained(name)
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        name, config=config, **model_kwargs
+        name, config=config, quantization_config=quantization_config, **model_kwargs
     )
 
     if is_neo_x_variant:
@@ -267,3 +283,4 @@ def add_model_args(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument("--device", help="device to train on")
     parser.add_argument("--fp16", type=bool, help="set whether to use fp16")
+    parser.add_argument("--quantization", type=str, choices=['4bit', '8bit'], help="whether to use quantization")

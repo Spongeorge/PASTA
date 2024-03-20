@@ -17,6 +17,11 @@ wget
 tensorboard 
 # git+https://github.com/davidbau/baukit
 
+# quantization
+torch==2.2.1
+bitsandbytes-cuda110
+bitsandbytes
+
 # dev dependencies
 black
 isort
