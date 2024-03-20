@@ -25,6 +25,9 @@ GPT_J_NAME = "EleutherAI/gpt-j-6B"
 GPT_NEO_X_NAME_SHORT = "neox"
 GPT_NEO_X_NAME = "EleutherAI/gpt-neox-20b"
 
+GEMMA_NAME_SHORT = "gemma"
+GEMMA_NAME = "google/gemma-2b"
+
 
 @dataclass(frozen=True)
 class ModelAndTokenizer:
@@ -213,6 +216,8 @@ def load_model(
         name = GPT_J_NAME
     elif name == GPT_NEO_X_NAME_SHORT:
         name = GPT_NEO_X_NAME
+    elif name == GEMMA_NAME_SHORT:
+        name = GEMMA_NAME
 
     is_gpt_j_variant = name == GPT_J_NAME or GPT_J_NAME_SHORT in name
     is_neo_x_variant = name == GPT_NEO_X_NAME or GPT_NEO_X_NAME_SHORT in name
@@ -224,7 +229,7 @@ def load_model(
         model_kwargs["low_cpu_mem_usage"] = True
         if fp16:
             model_kwargs["revision"] = "float16"
-    if "llama" in name:
+    if ("llama" in name) or ("gemma" in name):
         model_kwargs["torch_dtype"] = torch.bfloat16 
     if device=="auto":
         model_kwargs["device_map"] = "auto"
